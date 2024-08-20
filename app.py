@@ -42,7 +42,7 @@ nasdaq100_stocks = [
 page = st.sidebar.selectbox("Select Page", ["CAPM Analysis", "Stock Comparison"])
 
 if page == "CAPM Analysis":
-    # User selects benchmark and stocks
+
     col1, col2 = st.columns([1, 1])
     with col1:
         benchmark = st.selectbox("Select Benchmark", options=list(benchmarks.keys()))
@@ -51,36 +51,33 @@ if page == "CAPM Analysis":
 
     year = st.number_input("Number of Years", 1, 15)
 
-    # Ensure the user selects valid input
     if not stocks_list or year == 0:
         st.warning("Please select at least one stock and a valid number of years.")
     else:
         try:
-            # Set start and end date
+      
             end = datetime.date.today()
             start = datetime.date(end.year - year, end.month, end.day)
 
-            # Fetch benchmark data
+       
             benchmark_symbol = benchmarks[benchmark]
             benchmark_data = yf.download(benchmark_symbol, start=start, end=end)
             benchmark_data = benchmark_data[['Close']].rename(columns={'Close': benchmark})
 
-            # Fetch data for the selected stocks
+  
             stocks_df = pd.DataFrame()
             for stock in stocks_list:
                 data = yf.download(stock, start=start, end=end)
                 stocks_df[stock] = data['Close']
 
-            # Reset index to have a proper Date column
+
             stocks_df.reset_index(inplace=True)
             benchmark_data.reset_index(inplace=True)
 
-            # Merge stock data with the benchmark index data
             stocks_df['Date'] = pd.to_datetime(stocks_df['Date'])
             benchmark_data['Date'] = pd.to_datetime(benchmark_data['Date'])
             stocks_df = pd.merge(stocks_df, benchmark_data[['Date', benchmark]], on='Date', how='inner')
 
-            # Display dataframes
             col1, col2 = st.columns([1, 1])
             with col1:
                 st.markdown("### Dataframe head")
@@ -89,7 +86,6 @@ if page == "CAPM Analysis":
                 st.markdown("### Dataframe tail")
                 st.dataframe(stocks_df.tail(), use_container_width=True)
 
-            # Visualization
             col1, col2 = st.columns([1, 1])
             with col1:
                 st.markdown("### Price of selected stocks")
@@ -109,16 +105,17 @@ if page == "CAPM Analysis":
                 beta[stock] = b
                 alpha[stock] = a
 
-            # Display Beta Values
+        
             beta_df = pd.DataFrame({'Stock': beta.keys(), 'Beta Value': [round(b, 2) for b in beta.values()]})
             with col1:
                 st.markdown("### Beta Values")
                 st.dataframe(beta_df, use_container_width=True)
 
-            # CAPM Return Calculation
-            rf = 0  # Risk-free rate, you can set a valid value here
-            rm = stock_daily_return[benchmark].mean() * 252  # Market return
+            
+            rf = 0 
+            rm = stock_daily_return[benchmark].mean() * 252  
 
+            #Formula for CAPM 
             return_values = [round(rf + beta[stock] * (rm - rf), 2) for stock in stocks_list]
             return_df = pd.DataFrame({'Stock': stocks_list, 'Expected Return (CAPM)': return_values})
 
@@ -130,7 +127,7 @@ if page == "CAPM Analysis":
             st.error(f"An error occurred: {e}")
 
 elif page == "Stock Comparison":
-    # User selects stocks for comparison
+
     col1, col2 = st.columns([1, 1])
     with col1:
         stock1 = st.selectbox("Select First Stock", options=nifty50_stocks + nasdaq100_stocks)
@@ -141,33 +138,32 @@ elif page == "Stock Comparison":
 
     if stock1 and stock2 and year > 0:
         try:
-            # Set start and end date
+     
             end = datetime.date.today()
             start = datetime.date(end.year - year, end.month, end.day)
 
-            # Fetch data for the selected stocks
+         
             data1 = yf.download(stock1, start=start, end=end)
             data2 = yf.download(stock2, start=start, end=end)
 
-            # Prepare dataframes
+           
             df1 = data1[['Close']].rename(columns={'Close': stock1})
             df2 = data2[['Close']].rename(columns={'Close': stock2})
 
             df1.reset_index(inplace=True)
             df2.reset_index(inplace=True)
 
-            # Merge data
+           
             comparison_df = pd.merge(df1, df2, on='Date', how='inner')
 
-            # Calculate cumulative returns in percentage
+            
             comparison_df[f'{stock1} Return (%)'] = (comparison_df[stock1] / comparison_df[stock1].iloc[0] - 1) * 100
             comparison_df[f'{stock2} Return (%)'] = (comparison_df[stock2] / comparison_df[stock2].iloc[0] - 1) * 100
 
-            # Visualization
             st.markdown("### Cumulative Return Comparison (%)")
             st.line_chart(comparison_df[['Date', f'{stock1} Return (%)', f'{stock2} Return (%)']].set_index('Date'))
 
-            # Display the final cumulative returns
+        
             final_returns = comparison_df[['Date', f'{stock1} Return (%)', f'{stock2} Return (%)']].iloc[-1]
             st.markdown(f"### Final Cumulative Returns Over {year} Years")
             st.write(f"{stock1} Return: {final_returns[f'{stock1} Return (%)']:.2f}%")
