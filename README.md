@@ -24,4 +24,4 @@ Rm = The expected return of the overall market.
 In summary, CAPM helps investors understand how much return they should expect from an asset, considering its risk (beta) relative to the broader market.
 
 
-[https://capmanalytics.streamlit.app/](Preview)
+[Preview](https://capmanalytics.streamlit.app/)
