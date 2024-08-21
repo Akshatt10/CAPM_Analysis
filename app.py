@@ -4,7 +4,7 @@ import yfinance as yf
 import datetime
 import capm_functions
 
-# Streamlit app configuration
+
 st.set_page_config(page_title="CAPM Analysis", page_icon="📈", layout='wide')
 
 # Custom CSS for styling
@@ -21,11 +21,6 @@ st.markdown(
     .sidebar .sidebar-content {
         background-color: #f0f2f6;
     }
-    .metric-header {
-        font-size: 20px;
-        font-weight: bold;
-        color: #4B6CB7;
-    }
     </style>
     """,
     unsafe_allow_html=True
@@ -34,6 +29,14 @@ st.markdown(
 # Main Header
 st.markdown('<h1 class="main-header">Capital Asset Pricing Model (CAPM)</h1>', unsafe_allow_html=True)
 
+
+# Sidebar with enhanced navigation
+st.sidebar.markdown("## Navigation")
+st.sidebar.markdown("Choose the page according to the feature need:")
+
+# Sidebar for page navigation with radio buttons for better visibility
+page = st.sidebar.radio("Select Page", ["📈 CAPM Analysis", "📊 Stock Comparison"])
+
 # Benchmarks and stock lists
 benchmarks = {
     'Nifty 50': '^NSEI',
@@ -41,10 +44,10 @@ benchmarks = {
 }
 
 nifty50_stocks = [
-     'ADANIPORTS.NS', 'ASIANPAINT.NS', 'AXISBANK.NS', 'BAJAJ-AUTO.NS', 'BAJAJFINSV.NS',
+    'ADANIPORTS.NS', 'ASIANPAINT.NS', 'AXISBANK.NS', 'BAJAJ-AUTO.NS', 'BAJAJFINSV.NS',
     'BAJFINANCE.NS', 'BHARTIARTL.NS', 'BPCL.NS', 'BRITANNIA.NS', 'CIPLA.NS',
     'COALINDIA.NS', 'DIVISLAB.NS', 'DRREDDY.NS', 'EICHERMOT.NS', 'GRASIM.NS',
-    'HCLTECH.NS', 'HDFC.NS', 'HDFC.NS', 'HDFCBANK.NS', 'HDFCLIFE.NS', 'HEROMOTOCO.NS',
+    'HCLTECH.NS', 'HDFC.NS', 'HDFCBANK.NS', 'HDFCLIFE.NS', 'HEROMOTOCO.NS',
     'HINDALCO.NS', 'HINDUNILVR.NS', 'ICICIBANK.NS', 'INDUSINDBK.NS', 'INFY.NS',
     'ITC.NS', 'JSWSTEEL.NS', 'KOTAKBANK.NS', 'LT.NS', 'M&M.NS',
     'MARUTI.NS', 'NESTLEIND.NS', 'NTPC.NS', 'ONGC.NS', 'POWERGRID.NS',
@@ -54,7 +57,7 @@ nifty50_stocks = [
 ]
 
 nasdaq100_stocks = [
-      'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B', 'UNH', 'V',
+    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B', 'UNH', 'V',
     'MA', 'HD', 'DIS', 'ADBE', 'CMCSA', 'NFLX', 'INTC', 'CSCO', 'PFE', 'MRK',
     'PEP', 'AVGO', 'TXN', 'QCOM', 'ABT', 'TMO', 'CRM', 'ORCL', 'COST', 'NKE',
     'MCD', 'AMGN', 'MDT', 'HON', 'BMY', 'C', 'BAX', 'BA', 'GILD', 'MS',
@@ -64,10 +67,7 @@ nasdaq100_stocks = [
     'PSA', 'ISRG', 'MCHP', 'HPE', 'MU', 'LUV', 'MSCI', 'CSX', 'XOM', 'TRV'
 ]
 
-# Sidebar for page navigation
-page = st.sidebar.selectbox("Select Page", ["CAPM Analysis", "Stock Comparison"])
-
-if page == "CAPM Analysis":
+if page == "📈 CAPM Analysis":
     col1, col2 = st.columns([1, 1])
     with col1:
         benchmark = st.selectbox("Select Benchmark", options=list(benchmarks.keys()))
@@ -78,6 +78,14 @@ if page == "CAPM Analysis":
 
     if not stocks_list or year == 0:
         st.warning("Please select at least one stock and a valid number of years.")
+        st.markdown(
+       '''
+       <div style="text-align: center;">
+          <h2> For stock comparison select the next page from sidebar! </h2>
+        </div>
+        ''',
+    unsafe_allow_html=True
+)
     else:
         try:
             end = datetime.date.today()
@@ -137,11 +145,22 @@ if page == "CAPM Analysis":
                 return_values = [round(rf + beta[stock] * (rm - rf), 2) for stock in stocks_list]
                 return_df = pd.DataFrame({'Stock': stocks_list, 'Expected Return (CAPM)': return_values})
                 st.dataframe(return_df, use_container_width=True)
+                
+            st.markdown("""
+            ## What is CAPM?
+            The Capital Asset Pricing Model (CAPM) is a financial model that calculates the expected return of an investment based on its risk in relation to the market. 
+            It uses beta to measure an asset's volatility compared to the market, helping investors assess the potential risk and return of their investments.
+            
+            Formula used to calculate CAPM is :- Ra = Rf + β(Rm - Rf)   
+            where:   
+            Rf = The return on a risk-free investment, such as government bonds.   
+            Rm = The expected return of the overall market.  
+            """)
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
 
-elif page == "Stock Comparison":
+elif page == "📊 Stock Comparison":
     col1, col2 = st.columns([1, 1])
     with col1:
         stock1 = st.selectbox("Select First Stock", options=nifty50_stocks + nasdaq100_stocks)
@@ -173,10 +192,16 @@ elif page == "Stock Comparison":
             st.markdown("### Cumulative Return Comparison (%)")
             st.line_chart(comparison_df[['Date', f'{stock1} Return (%)', f'{stock2} Return (%)']].set_index('Date'))
 
+            st.markdown("### Stock Prices")
+            st.line_chart(comparison_df[['Date', stock1, stock2]].set_index('Date'))
+            
             final_returns = comparison_df[['Date', f'{stock1} Return (%)', f'{stock2} Return (%)']].iloc[-1]
             st.markdown(f"### Final Cumulative Returns Over {year} Years")
             st.write(f"{stock1} Return: {final_returns[f'{stock1} Return (%)']:.2f}%")
             st.write(f"{stock2} Return: {final_returns[f'{stock2} Return (%)']:.2f}%")
 
+
         except Exception as e:
             st.error(f"An error occurred: {e}")
+    else:
+        st.warning("Please select two different stocks and a valid number of years.")
