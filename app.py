@@ -26,18 +26,15 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Main Header
 st.markdown('<h1 class="main-header">Capital Asset Pricing Model (CAPM)</h1>', unsafe_allow_html=True)
 
 
-# Sidebar with enhanced navigation
 st.sidebar.markdown("## Navigation")
 st.sidebar.markdown("Choose the page according to the feature need:")
 
-# Sidebar for page navigation with radio buttons for better visibility
 page = st.sidebar.radio("Select Page", ["📈 CAPM Analysis", "📊 Stock Comparison"])
 
-# Benchmarks and stock lists
+
 benchmarks = {
     'Nifty 50': '^NSEI',
     'NASDAQ 100': '^NDX'
@@ -121,7 +118,7 @@ if page == "📈 CAPM Analysis":
                 st.markdown("### Normalized Stock Prices")
                 st.plotly_chart(capm_functions.interactive_plot(normalized_df), use_container_width=True)
 
-            # CAPM Calculations
+            # Calculating beta values for CAPM calculations 
             stock_daily_return = capm_functions.daily_returns(stocks_df)
             beta = {}
             alpha = {}
@@ -139,8 +136,8 @@ if page == "📈 CAPM Analysis":
 
             with col2:
                 st.markdown("### Expected Return using CAPM")
-                rf = 0  # Risk-free rate
-                rm = stock_daily_return[benchmark].mean() * 252  # Market return
+                rf = 0  
+                rm = stock_daily_return[benchmark].mean() * 252 
 
                 return_values = [round(rf + beta[stock] * (rm - rf), 2) for stock in stocks_list]
                 return_df = pd.DataFrame({'Stock': stocks_list, 'Expected Return (CAPM)': return_values})
